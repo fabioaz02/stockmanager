@@ -5,11 +5,19 @@ export default function RootLayout() {
     <Stack>
       <Stack.Screen
         name="(tabs)"
-        options={{ title: 'Stock Manager' }} // ✅ Substitua aqui
+        options={{ title: 'Meu Estoque' }} // ✅ Substitua aqui
       />
       <Stack.Screen
         name="login"
-        options={{ title: 'Bem-vindo' }}
+        options={{ title: 'Stock Manager' }}
+      /> {/* 👈 aqui muda o texto */}
+      <Stack.Screen
+        name="produtos/cadastrar"
+        options={{ title: 'Cadastro de Produto' }}
+      /> {/* 👈 aqui muda o texto */}
+      <Stack.Screen
+        name="movimentacoes/cadastrar"
+        options={{ title: 'Cadastro de Movimentacao' }}
       /> {/* 👈 aqui muda o texto */}
     </Stack>
 
