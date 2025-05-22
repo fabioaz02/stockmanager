@@ -1,112 +1,67 @@
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { auth } from '../lib/firebase';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [mostrarSenha, setMostrarSenha] = useState(false);
-  const router = useRouter();
-
-  const handleLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, senha);
-      router.replace('/(tabs)/');
-    } catch (error) {
-      Alert.alert('Erro ao fazer login', 'Verifique suas credenciais e tente novamente.');
-    }
-  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Bem-vindo de volta!</Text>
+      <Text style={styles.logo}>📦</Text>
 
-      <View style={styles.inputContainer}>
-        <Ionicons name="mail" size={20} color="#666" style={styles.icone} />
-        <TextInput
-          placeholder="E-mail"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={styles.input}
-        />
-      </View>
+      <Text style={styles.label}>Nome de usuário ou e-mail:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Nome de usuário ou e-mail"
+        value={email}
+        onChangeText={setEmail}
+      />
 
-      <View style={styles.inputContainer}>
-        <Ionicons name="lock-closed" size={20} color="#666" style={styles.icone} />
-        <TextInput
-          placeholder="Senha"
-          value={senha}
-          onChangeText={setSenha}
-          secureTextEntry={!mostrarSenha}
-          autoCapitalize="none"
-          style={styles.input}
-        />
-        <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)}>
-          <MaterialIcons
-            name={mostrarSenha ? 'visibility' : 'visibility-off'}
-            size={20}
-            color="#666"
-          />
-        </TouchableOpacity>
-      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+      />
 
-      <TouchableOpacity style={styles.botao} onPress={handleLogin}>
-        <Text style={styles.textoBotao}>Entrar</Text>
+      <TouchableOpacity style={styles.forgotButton}>
+        <Text style={styles.forgotText}>Esqueceu a senha?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/register')}>
-        <Text style={styles.link}>Não tem uma conta? Cadastre-se</Text>
+      <TouchableOpacity style={styles.loginButton} onPress={() => router.replace('/(tabs)')}>
+        <Text style={styles.loginText}>Entrar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Text style={styles.registerText}>Cadastre-se</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 40,
-    textAlign: 'center',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 25,
-  },
-  icone: {
-    marginRight: 10,
-  },
+  container: { flex: 1, backgroundColor: '#cceaff', justifyContent: 'center', padding: 24 },
+  logo: { fontSize: 64, alignSelf: 'center', marginBottom: 32 },
+  label: { marginBottom: 8 },
   input: {
-    flex: 1,
-    height: 40,
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderColor: '#999',
+    borderWidth: 1,
   },
-  botao: {
-    backgroundColor: '#1E90FF',
+  forgotButton: { alignItems: 'flex-end' },
+  forgotText: { color: '#0055aa', marginBottom: 20 },
+  loginButton: {
+    backgroundColor: '#004466',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
   },
-  textoBotao: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  link: {
-    color: '#1E90FF',
-    marginTop: 15,
-    textAlign: 'center',
-  },
+  loginText: { color: '#fff', fontWeight: 'bold' },
+  registerText: { textAlign: 'center', marginTop: 20, color: '#003355' },
 });
