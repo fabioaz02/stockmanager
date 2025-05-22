@@ -1,12 +1,12 @@
 import { Entypo, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function CadastroProduto() {
@@ -14,10 +14,6 @@ export default function CadastroProduto() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Voltar */}
-      <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-        <Ionicons name="arrow-back-circle" size={28} color="#7799aa" />
-      </TouchableOpacity>
 
       {/* Nome e descrição */}
       <Text style={styles.label}>Nome</Text>

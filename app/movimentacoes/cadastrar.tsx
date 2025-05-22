@@ -1,13 +1,14 @@
-import { Entypo, Ionicons } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function NovaMovimentacao() {
@@ -20,13 +21,6 @@ export default function NovaMovimentacao() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Voltar e título */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back-circle" size={28} color="#7799aa" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Nova Movimentação</Text>
-      </View>
 
       {/* Código/Referência */}
       <Text style={styles.label}>Código/Referência</Text>
@@ -47,31 +41,18 @@ export default function NovaMovimentacao() {
 
       {/* Operação e Quantidade */}
       <View style={styles.row}>
-        <View style={{ flex: 1 }}>
+        <View style={styles.container}>
           <Text style={styles.label}>Operação</Text>
-          <TouchableOpacity
-            style={styles.input}
-            onPress={() => setShowOperacao(true)}
-          >
-            <Text>{operacao}</Text>
-          </TouchableOpacity>
-
-          {showOperacao && (
-            <View style={styles.selectBox}>
-              {['ENTRADA', 'SAÍDA'].map((opcao) => (
-                <TouchableOpacity
-                  key={opcao}
-                  style={styles.optionItem}
-                  onPress={() => {
-                    setOperacao(opcao as 'ENTRADA' | 'SAÍDA');
-                    setShowOperacao(false);
-                  }}
-                >
-                  <Text>{opcao}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={operacao}
+              onValueChange={(valor) => setOperacao(valor)}
+              mode="dropdown"
+            >
+              <Picker.Item label="ENTRADA" value="ENTRADA" />
+              <Picker.Item label="SAÍDA" value="SAÍDA" />
+            </Picker>
+          </View>
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>Quantidade</Text>
@@ -163,4 +144,10 @@ const styles = StyleSheet.create({
   },
   btnText: { color: '#fff', fontWeight: 'bold' },
   btnTextCancel: { color: '#fff', fontWeight: 'bold' },
+  pickerWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
 });
