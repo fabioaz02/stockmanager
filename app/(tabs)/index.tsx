@@ -25,6 +25,7 @@ export default function Home() {
     nome: string;
     ultima_movimentacao: string;
     valor_venda: string;
+    quantidade: number;
   };
 
   const [user, setUser] = useState<any>(null);
@@ -43,18 +44,41 @@ export default function Home() {
 
   const carregaProdutos = (uid: string) => {
     const produtosRef = ref(database, `usuarios/${uid}/produtos`);
+    const movRef = ref(database, `usuarios/${uid}/movimentacoes`);
+
     onValue(produtosRef, (snapshot) => {
       const data = snapshot.val() || {};
-      const lista = Object.entries(data)
-        .map(([id, p]: any) => ({
-          id,
-          nome: p.nome,
-          ultima_movimentacao: formatDate(p.ultima_movimentacao),
-          valor_venda: p.precoVenda || 'R$ 0,00',
-        }))
-        .slice(-5)
-        .reverse();
-      setProdutos(lista);
+      const todos = Object.entries(data).map(([id, p]: any) => ({
+        id,
+        nome: p.nome,
+        valor_venda: formatCurrency(p.precoVenda || 0),
+        quantidade: p.quantidade || 0,
+      }));
+
+      onValue(movRef, (movSnap) => {
+        const movData = movSnap.val() || {};
+        const ultimasMovs: Record<string, string> = {};
+
+        for (const [_, mov] of Object.entries(movData)) {
+          const produtoNome = (mov as any).nome;
+          const dataMov = (mov as any).data;
+          if (!ultimasMovs[produtoNome] || new Date(dataMov) > new Date(ultimasMovs[produtoNome])) {
+            ultimasMovs[produtoNome] = dataMov;
+          }
+        }
+
+        const todosComData = todos.map((p) => ({
+          ...p,
+          ultima_movimentacao: formatDate(ultimasMovs[p.nome] || '')
+        }));
+
+        const estoqueNegativo = todosComData.filter(p => p.quantidade < 0);
+        const estoqueZerado = todosComData.filter(p => p.quantidade === 0);
+        const poucoEstoque = todosComData.filter(p => p.quantidade > 0 && p.quantidade < 3);
+
+        const lista = [...estoqueNegativo, ...estoqueZerado, ...poucoEstoque].slice(0, 5);
+        setProdutos(lista);
+      });
     });
   };
 
@@ -68,7 +92,7 @@ export default function Home() {
           nome: m.nome,
           quantidade: m.quantidade,
           operacao: m.operacao,
-          valor: m.valor,
+          valor: formatCurrency(m.valor || 0),
         }))
         .slice(-5)
         .reverse();
@@ -80,6 +104,15 @@ export default function Home() {
     if (!data) return '';
     const d = new Date(data);
     return d.toLocaleDateString('pt-BR');
+  };
+
+  const formatCurrency = (value: number | string) => {
+    const val = typeof value === 'string' ? parseFloat(value) : value;
+    return val.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+    });
   };
 
   return (
@@ -109,6 +142,7 @@ export default function Home() {
             <Text style={styles.cell}>{p.nome}</Text>
             <Text style={styles.cell}>{p.ultima_movimentacao}</Text>
             <Text style={styles.cell}>{p.valor_venda}</Text>
+            <Text style={styles.cell}>Qnt. {p.quantidade}</Text>
           </View>
         ))
       ) : (
@@ -120,7 +154,7 @@ export default function Home() {
         movimentacoes.map((m) => (
           <View key={m.id} style={styles.row}>
             <Text style={styles.cell}>{m.nome}</Text>
-            <Text style={styles.cell}>{m.quantidade}</Text>
+            <Text style={styles.cell}>Qnt. {m.quantidade}</Text>
             <Text style={styles.cell}>{m.operacao}</Text>
             <Text style={styles.cell}>{m.valor}</Text>
           </View>
@@ -152,8 +186,9 @@ const styles = StyleSheet.create({
     padding: 8,
     marginBottom: 4,
     borderRadius: 4,
+    flexWrap: 'wrap',
   },
-  cell: { width: '30%', textAlign: 'center', fontSize: 12 },
+  cell: { width: '23%', textAlign: 'center', fontSize: 12 },
   placeholder: {
     fontSize: 12,
     fontStyle: 'italic',

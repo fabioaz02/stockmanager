@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { onValue, push, ref, update } from 'firebase/database';
 import { useEffect, useRef, useState } from 'react';
 import {
-  FlatList,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -12,7 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View,
+  View
 } from 'react-native';
 
 export default function NovaMovimentacao() {
@@ -66,7 +65,7 @@ export default function NovaMovimentacao() {
   const selecionarProduto = (produto: any) => {
     if (produto.id === '0') return;
     setProdutoSelecionado(produto);
-    setBusca(`${produto.codigo} - ${produto.nome}`);
+    setBusca('');
     setShowSugestoes(false);
     Keyboard.dismiss();
   };
@@ -108,37 +107,41 @@ export default function NovaMovimentacao() {
       Keyboard.dismiss();
       setShowSugestoes(false);
     }}>
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
         {/* Campo de busca */}
         <Text style={styles.label}>Código, Referência ou Nome</Text>
-        <TextInput
-          ref={inputRef}
-          style={styles.input}
-          placeholder="Digite para buscar"
-          value={busca}
-          onChangeText={(t) => {
-            setBusca(t);
-            setShowSugestoes(true);
-            setProdutoSelecionado(null);
-          }}
-        />
-        {showSugestoes && sugestoes.length > 0 && (
-          <FlatList
-            data={sugestoes}
-            style={styles.listaSugestoes}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.sugestaoItem}
-                onPress={() => selecionarProduto(item)}
-              >
-                <Text style={styles.sugestaoTexto}>
-                  {item.id === '0' ? 'Nenhum resultado encontrado' : `${item.codigo} - ${item.nome}`}
-                </Text>
-              </TouchableOpacity>
-            )}
+        <View style={{ position: 'relative' }}>
+          <TextInput
+            ref={inputRef}
+            style={styles.input}
+            placeholder="Buscar produto..."
+            value={busca}
+            onChangeText={(text) => {
+              setBusca(text);
+              if (!produtoSelecionado || text !== `${produtoSelecionado.codigo} - ${produtoSelecionado.nome}`) {
+                setShowSugestoes(true);
+                setProdutoSelecionado(null);
+              }
+            }}
+            onFocus={() => setShowSugestoes(true)}
           />
-        )}
+
+          {showSugestoes && (
+            <View style={[styles.listaSugestoes, { position: 'absolute', top: 52, zIndex: 10, width: '100%' }]}> 
+              {sugestoes.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.sugestaoItem}
+                  onPress={() => selecionarProduto(item)}
+                >
+                  <Text style={styles.sugestaoTexto}>
+                    {item.id === '0' ? 'Nenhum resultado encontrado' : `${item.codigo} - ${item.nome}`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
 
         {/* Nome do produto */}
         <Text style={styles.label}>Nome do Produto</Text>
@@ -153,7 +156,7 @@ export default function NovaMovimentacao() {
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>Operação</Text>
             <View style={styles.pickerWrapper}>
-              <Picker selectedValue={operacao} onValueChange={setOperacao}>
+              <Picker selectedValue={operacao} onValueChange={setOperacao} style={{ fontSize: 12 }}>
                 <Picker.Item label="ENTRADA" value="ENTRADA" />
                 <Picker.Item label="SAÍDA" value="SAÍDA" />
               </Picker>
@@ -207,6 +210,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
+    paddingLeft: 12,
+    marginBottom: 8,
+    height: 48,
+    justifyContent: 'center',
   },
   row: { flexDirection: 'row', gap: 12, marginTop: 8 },
   buttonRow: {
@@ -246,6 +253,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
   },
   sugestaoTexto: {
-    fontSize: 14,
+    fontSize: 12,
+    textAlign: 'left',
+    paddingLeft: 2,
   },
 });
