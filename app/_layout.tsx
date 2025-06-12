@@ -46,6 +46,10 @@ export default function RootLayout() {
         name="movimentacoes/cadastrar"
         options={{ title: 'Cadastro de Movimentacao' }}
       />
+      <Stack.Screen
+        name="cadastro"
+        options={{ title: 'Cadastrar Nova Conta' }}
+      />
     </Stack>
   );
 }

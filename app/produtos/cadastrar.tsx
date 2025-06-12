@@ -1,4 +1,4 @@
-import { Entypo, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { get, ref, set, update } from "firebase/database";
@@ -21,21 +21,29 @@ export default function CadastroProduto() {
   });
 
   const lucro = (() => {
-  const custo = parseFloat(form.precoCusto.replace(/[^0-9,.-]+/g, '').replace(',', '.'));
-  const venda = parseFloat(form.precoVenda.replace(/[^0-9,.-]+/g, '').replace(',', '.'));
-  if (!isNaN(custo) && custo > 0 && !isNaN(venda)) {
-    return (((venda - custo) / custo) * 100).toFixed(2) + "%";
-  }
-  return "0%";
-})();
+    const custo = parseFloat(form.precoCusto.replace(/[^0-9,.-]+/g, '').replace(',', '.'));
+    const venda = parseFloat(form.precoVenda.replace(/[^0-9,.-]+/g, '').replace(',', '.'));
+    if (!isNaN(custo) && custo > 0 && !isNaN(venda)) {
+      return (((venda - custo) / custo) * 100).toFixed(2) + "%";
+    }
+    return "0%";
+  })();
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImagePick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (permission.status !== "granted") {
+      Alert.alert(
+        "Permissão de Câmera Necessária",
+        "Este aplicativo precisa de acesso à câmera para permitir que você tire fotos dos produtos. Vá até as configurações do dispositivo para conceder acesso."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 0.5,
       base64: true,
@@ -183,9 +191,9 @@ export default function CadastroProduto() {
           <Image key={i} source={{ uri: img }} style={styles.imgPreview} />
         ))}
         <TouchableOpacity style={styles.addImage} onPress={handleImagePick}>
-          <Entypo name="image" size={48} />
+          <Ionicons name="camera" size={48} />
           <Ionicons name="add-circle" size={18} style={styles.addIcon} />
-          <Text style={styles.addLabel}>Adicionar</Text>
+          <Text style={styles.addLabel}>Tirar Foto</Text>
         </TouchableOpacity>
       </View>
 
