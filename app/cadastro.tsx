@@ -48,7 +48,7 @@ export default function CadastroScreen() {
         criadoEm: new Date().toISOString(),
       });
 
-      router.replace("/"); // redireciona para as tabs
+      router.replace("/(tabs)"); // redireciona para as tabs
     } catch (error: any) {
       Alert.alert("Erro ao cadastrar", error.message);
     }
@@ -107,7 +107,7 @@ export default function CadastroScreen() {
             <Text style={styles.buttonText}>Cadastrar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.replace("/login")}>
+          <TouchableOpacity onPress={() => router.back()}>
             <Text style={styles.register}>Já tem conta? Entrar</Text>
           </TouchableOpacity>
         </View>
