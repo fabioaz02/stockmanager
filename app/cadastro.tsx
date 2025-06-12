@@ -42,8 +42,8 @@ export default function CadastroScreen() {
 
       await set(ref(database, `usuarios/${user.uid}`), {
         uid: user.uid,
-        nome,
-        email,
+        nome: nome,
+        email: email,
         tipo: "estoquista",
         criadoEm: new Date().toISOString(),
       });

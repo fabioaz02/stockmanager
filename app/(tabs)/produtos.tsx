@@ -17,9 +17,11 @@ import { auth, database } from '../../firebaseConfig';
 
 export default function ProdutosScreen() {
     const [produtos, setProdutos] = useState<any[]>([]);
+    const [produtosFiltrados, setProdutosFiltrados] = useState<any[]>([]);
     const [selected, setSelected] = useState<any | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [busca, setBusca] = useState('');
     const router = useRouter();
 
     const abrirModal = (produto: any) => {
@@ -36,7 +38,7 @@ export default function ProdutosScreen() {
         const uid = auth.currentUser?.uid;
         if (!uid) return;
 
-        const produtosRef = ref(database, `estoque/${uid}`);
+        const produtosRef = ref(database, `usuarios/${uid}/produtos`);
 
         const unsubscribe = onValue(produtosRef, (snapshot) => {
             if (snapshot.exists()) {
@@ -46,29 +48,43 @@ export default function ProdutosScreen() {
                     ...data[id],
                 }));
                 setProdutos(lista);
+                setProdutosFiltrados(lista);
             } else {
                 setProdutos([]);
+                setProdutosFiltrados([]);
             }
         });
 
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        const texto = busca.toLowerCase();
+        const filtrado = produtos.filter((p) =>
+            p.nome?.toLowerCase().includes(texto) ||
+            p.codigo?.toString().includes(texto) ||
+            p.referencia?.toLowerCase().includes(texto)
+        );
+        setProdutosFiltrados(filtrado);
+    }, [busca, produtos]);
+
     return (
         <View style={styles.container}>
-            {/* Filtros e Busca */}
-            <View style={styles.filtros}>
-                <View style={styles.searchContainer}>
-                    <TextInput placeholder="Buscar..." style={styles.searchInput} />
-                    <Ionicons name="search" size={20} />
-                </View>
+            <View style={styles.filtros}>                
+                <TextInput
+                    placeholder="Buscar por nome, código ou referência"
+                    style={styles.searchInput}
+                    value={busca}
+                    onChangeText={setBusca}
+                    placeholderTextColor="#999"
+                />
             </View>
 
             {loading ? (
                 <ActivityIndicator size="large" style={{ marginTop: 40 }} />
             ) : (
                 <FlatList
-                    data={produtos}
+                    data={produtosFiltrados}
                     keyExtractor={(item) => item.id}
                     numColumns={2}
                     columnWrapperStyle={styles.cardRow}
@@ -81,41 +97,70 @@ export default function ProdutosScreen() {
                                 <Entypo name="image" size={48} color="#333" />
                             )}
                             <Text style={styles.nome}>{item.nome}</Text>
-                            <Text style={styles.texto}>
-                                Qt: {item.quantidade} R$ {Number(item.precoVenda).toFixed(2)}
-                            </Text>
+                            <View style={styles.rowInfo}>
+                                <Text style={styles.quantidade}>Qt: {item.quantidade}</Text>
+                                <View style={{ flex: 1 }} />
+                                <Text style={styles.valor}>R$ {Number(item.precoVenda).toFixed(2)}</Text>
+                            </View>
                             <TouchableOpacity
-                                style={styles.botaoEditar}
+                                style={styles.botaoEditarNatural}
                                 onPress={() => router.push(`/produtos/cadastrar?produtoId=${item.id}`)}
                             >
-                                <Text style={styles.textoBotao}>Editar</Text>
+                                <Ionicons name="create-outline" size={16} color="#1c4e66" />
+                                <Text style={styles.textoBotaoNatural}>Editar</Text>
                             </TouchableOpacity>
                         </TouchableOpacity>
                     )}
                 />
             )}
 
-            {/* Modal de Detalhes */}
             <Modal transparent visible={modalVisible} animationType="fade">
                 <View style={styles.overlay}>
                     <View style={styles.modal}>
-                        {selected?.imagens?.[0] ? (
-                            <Image source={{ uri: selected.imagens[0] }} style={{ width: 64, height: 64 }} />
-                        ) : (
-                            <Entypo name="image" size={64} />
-                        )}
-                        <View style={styles.modalRow}>
-                            <Text style={styles.modalLabel}>Código: {selected?.codigo || "--"}</Text>
-                            <Text style={styles.modalLabel}>Referência: {selected?.referencia || "--"}</Text>
+                        <View style={{ alignItems: 'center', alignSelf: 'center', marginBottom: 8 }}>
+                            {selected?.imagens?.[0] ? (
+                                <Image source={{ uri: selected.imagens[0] }} style={{ width: 64, height: 64 }} />
+                            ) : (
+                                <Entypo name="image" size={64} />
+                            )}
                         </View>
-                        <Text style={styles.modalText}>Nome: {selected?.nome}</Text>
-                        <View style={styles.modalRow}>
-                            <Text style={styles.modalText}>Quantidade: {selected?.quantidade}</Text>
-                            <Text style={styles.modalText}>Valor: R$ {Number(selected?.precoVenda || 0).toFixed(2)}</Text>
+
+                        <Text style={styles.modalTitle}>{selected?.nome}</Text>
+
+                        <View style={styles.modalSectionRow}>
+                            <View style={styles.modalItem}>
+                                <Text style={styles.modalLabel}>Código:</Text>
+                                <Text style={styles.modalValue}>{selected?.codigo || '--'}</Text>
+                            </View>
+                            <View style={styles.modalItem}>
+                                <Text style={styles.modalLabel}>Referência:</Text>
+                                <Text style={styles.modalValue}>{selected?.referencia || '--'}</Text>
+                            </View>
                         </View>
-                        <Text style={styles.modalText}>Peso: {selected?.peso || "0kg"}</Text>
-                        <Text style={styles.modalText}>Dimensões: {selected?.dimensoes || "--"}</Text>
-                        <Text style={[styles.modalText, { marginTop: 8 }]}>Fotos</Text>
+
+                        <View style={styles.modalSectionRow}>
+                            <View style={styles.modalItem}>
+                                <Text style={styles.modalLabel}>Quantidade:</Text>
+                                <Text style={styles.modalValue}>Qnt. {selected?.quantidade}</Text>
+                            </View>
+                            <View style={styles.modalItem}>
+                                <Text style={styles.modalLabel}>Valor:</Text>
+                                <Text style={styles.modalValue}>R$ {Number(selected?.precoVenda || 0).toFixed(2)}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.modalSectionRow}>
+                            <View style={styles.modalItem}>
+                                <Text style={styles.modalLabel}>Peso:</Text>
+                                <Text style={styles.modalValue}>{selected?.peso || '0kg'}</Text>
+                            </View>
+                            <View style={styles.modalItem}>
+                                <Text style={styles.modalLabel}>Dimensões:</Text>
+                                <Text style={styles.modalValue}>{selected?.dimensoes || '--'}</Text>
+                            </View>
+                        </View>
+
+                        <Text style={[styles.modalLabel, { marginTop: 12 }]}>Fotos:</Text>
                         <View style={styles.fotos}>
                             {selected?.imagens?.length ? (
                                 selected.imagens.map((img: string, i: number) => (
@@ -138,9 +183,11 @@ export default function ProdutosScreen() {
                                     fecharModal();
                                 }}
                             >
+                                <Ionicons name="create-outline" size={16} color="#fff" />
                                 <Text style={styles.textoBotao}>Editar</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.botaoFecharModal} onPress={fecharModal}>
+                                <Ionicons name="close" size={16} color="#fff" />
                                 <Text style={styles.textoBotaoFechar}>Fechar</Text>
                             </TouchableOpacity>
                         </View>
@@ -148,129 +195,128 @@ export default function ProdutosScreen() {
                 </View>
             </Modal>
 
-            {/* Botão flutuante */}
             <TouchableOpacity
                 style={styles.fab}
                 onPress={() => router.push("/produtos/cadastrar")}
             >
-                <Ionicons name="add-circle-outline" size={28} color="#fff" />
+                <Ionicons name="add" size={28} color="#fff" />
             </TouchableOpacity>
         </View>
     );
 }
-
-
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#cceaff', padding: 12 },
-    title: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 12 },
-    filtros: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 12,
-    },
-    filtroIcon: { marginLeft: 8 },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-        backgroundColor: '#fff',
+    container: { flex: 1, backgroundColor: '#CFEAFF' },
+    filtros: { padding: 16 },
+    searchInput: {
+        height: 40,
+        borderColor: '#ccc',
+        borderWidth: 1,
         borderRadius: 8,
-        paddingHorizontal: 8,
-        marginLeft: 8,
-        height: 36,
+        paddingHorizontal: 10,
+        backgroundColor: '#fff',
+        fontSize: 14
     },
-    searchInput: { flex: 1, paddingRight: 8 },
-    cardContainer: { paddingBottom: 80 },
-    cardRow: { justifyContent: 'space-between', marginBottom: 12 },
+    cardContainer: { paddingBottom: 120 },
+    cardRow: { justifyContent: 'space-between', paddingHorizontal: 16 },
     card: {
         backgroundColor: '#fff',
-        borderRadius: 8,
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: 16,
         width: '48%',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    nome: { fontWeight: '600', fontSize: 14, marginTop: 8, marginBottom: 4 },
+    rowInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+    quantidade: { fontSize: 12, color: '#333' },
+    valor: { fontSize: 12, color: '#1c4e66', fontWeight: 'bold' },
+    botaoEditarNatural: {
+        flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 6,
+        marginTop: 6,
     },
-    nome: { marginTop: 6, fontSize: 14, fontWeight: 'bold' },
-    texto: { fontSize: 12, color: '#333', marginVertical: 4 },
-    botaoEditar: {
-        marginTop: 4,
-        backgroundColor: '#1c4e66',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 6,
+    textoBotaoNatural: {
+        fontSize: 12,
+        color: '#1c4e66',
+        marginLeft: 4,
     },
-    textoBotao: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
-
-    fab: {
-        position: 'absolute',
-        bottom: 16,
-        right: 16,
-        backgroundColor: '#1c4e66',
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 4,
-    },
-
     overlay: {
         flex: 1,
-        backgroundColor: '#0008',
+        backgroundColor: 'rgba(0,0,0,0.4)',
         justifyContent: 'center',
         alignItems: 'center',
     },
     modal: {
-        width: '85%',
         backgroundColor: '#fff',
         borderRadius: 12,
         padding: 16,
-        alignItems: 'center',
+        width: '90%',
     },
-    modalRow: {
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    modalSectionRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '100%',
-        marginTop: 8,
+        marginVertical: 4,
+    },
+    modalItem: {
+        flex: 1,
+        paddingHorizontal: 6,
     },
     modalLabel: {
-        fontWeight: 'bold',
         fontSize: 12,
+        fontWeight: 'bold',
+        color: '#666',
     },
-    modalText: {
-        fontSize: 13,
-        marginTop: 6,
+    modalValue: {
+        fontSize: 14,
+        color: '#333',
     },
     fotos: {
         flexDirection: 'row',
         marginTop: 4,
-        marginBottom: 8,
     },
     modalButtons: {
         flexDirection: 'row',
-        gap: 12,
+        justifyContent: 'space-around',
         marginTop: 16,
     },
     botaoEditarModal: {
         backgroundColor: '#1c4e66',
-        paddingHorizontal: 24,
-        paddingVertical: 8,
-        borderRadius: 6,
+        padding: 10,
+        borderRadius: 8,
         flex: 1,
         alignItems: 'center',
+        marginRight: 8,
     },
     botaoFecharModal: {
-        backgroundColor: '#ccc',
-        paddingHorizontal: 24,
-        paddingVertical: 8,
-        borderRadius: 6,
+        backgroundColor: '#777',
+        padding: 10,
+        borderRadius: 8,
         flex: 1,
         alignItems: 'center',
+        marginLeft: 8,
     },
-    textoBotaoFechar: {
-        color: '#333',
-        fontWeight: 'bold',
-        fontSize: 14,
+    textoBotao: { color: '#fff', fontWeight: 'bold' },
+    textoBotaoFechar: { color: '#fff', fontWeight: 'bold' },
+    fab: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        backgroundColor: '#1c4e66',
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 4,
     },
 });

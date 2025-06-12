@@ -20,6 +20,15 @@ export default function CadastroProduto() {
     precoVenda: "", imagens: [] as string[],
   });
 
+  const lucro = (() => {
+  const custo = parseFloat(form.precoCusto.replace(/[^0-9,.-]+/g, '').replace(',', '.'));
+  const venda = parseFloat(form.precoVenda.replace(/[^0-9,.-]+/g, '').replace(',', '.'));
+  if (!isNaN(custo) && custo > 0 && !isNaN(venda)) {
+    return (((venda - custo) / custo) * 100).toFixed(2) + "%";
+  }
+  return "0%";
+})();
+
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -55,18 +64,35 @@ export default function CadastroProduto() {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
 
-    const id = produtoId || Date.now().toString();
+    let id = produtoId;
+
+    if (!id) {
+      const produtosRef = ref(database, `usuarios/${uid}/produtos`);
+      const snap = await get(produtosRef);
+
+      if (snap.exists()) {
+        const produtos = snap.val();
+        const ids = Object.keys(produtos)
+          .map(Number)
+          .filter((n) => !isNaN(n));
+        const maxId = ids.length > 0 ? Math.max(...ids) : 0;
+        id = (maxId + 1).toString();
+      } else {
+        id = "1";
+      }
+    }
 
     const dados = {
       ...form,
-      precoCusto: parseFloat(form.precoCusto),
-      precoVenda: parseFloat(form.precoVenda),
+      precoCusto: parseFloat(form.precoCusto.replace(/[^0-9,.-]+/g, '').replace(',', '.')),
+      precoVenda: parseFloat(form.precoVenda.replace(/[^0-9,.-]+/g, '').replace(',', '.')),
       quantidade: parseInt(form.quantidade),
       ultimaData: new Date().toISOString(),
+      codigo: form.codigo || id,
     };
 
     try {
-      const produtoRef = ref(database, `estoque/${uid}/${id}`);
+      const produtoRef = ref(database, `usuarios/${uid}/produtos/${id}`);
       await (produtoId ? update(produtoRef, dados) : set(produtoRef, dados));
       Alert.alert("Sucesso", produtoId ? "Produto atualizado." : "Produto cadastrado.");
       router.back();
@@ -79,7 +105,7 @@ export default function CadastroProduto() {
     if (!produtoId) return;
 
     const uid = auth.currentUser?.uid;
-    const snap = await get(ref(database, `estoque/${uid}/${produtoId}`));
+    const snap = await get(ref(database, `usuarios/${uid}/produtos/${produtoId}`));
     if (snap.exists()) {
       const produto = snap.val();
       setForm({
@@ -117,7 +143,7 @@ export default function CadastroProduto() {
 
       <Text style={styles.section}>Detalhamento</Text>
       <View style={styles.row}>
-        <TextInput style={styles.smallInput} placeholder="Código" value={form.codigo} onChangeText={(v) => handleChange("codigo", v)} />
+        <TextInput style={[styles.smallInput, { backgroundColor: '#eee' }]} placeholder="Código" value={form.codigo} editable={false} />
         <TextInput style={styles.smallInput} placeholder="Referência" value={form.referencia} onChangeText={(v) => handleChange("referencia", v)} />
       </View>
       <View style={styles.row}>
@@ -125,8 +151,15 @@ export default function CadastroProduto() {
         <TextInput style={styles.smallInput} placeholder="Marca" value={form.marca} onChangeText={(v) => handleChange("marca", v)} />
       </View>
       <View style={styles.row}>
-        <TextInput style={styles.smallInput} placeholder="Peso" value={form.peso} onChangeText={(v) => handleChange("peso", v)} />
-        <TextInput style={styles.smallInput} placeholder="Dimensões" value={form.dimensoes} onChangeText={(v) => handleChange("dimensoes", v)} />
+        <TextInput style={styles.smallInput} placeholder="Ex: 1.250kg" value={form.peso} onChangeText={(v) => handleChange("peso", (parseFloat(v.replace(/[^0-9]/g, "")) / 1000).toFixed(3) + 'kg')} />
+        <TextInput
+          style={styles.smallInput}
+          placeholder="Ex: 10X20X30"
+          value={form.dimensoes}
+          onChangeText={(v) =>
+            handleChange("dimensoes", v.toUpperCase().replace(/\s+/g, ""))
+          }
+        />
       </View>
 
       <Text style={styles.section}>Preços e Custos</Text>
@@ -134,10 +167,15 @@ export default function CadastroProduto() {
       <TextInput style={styles.input} value={form.quantidade} onChangeText={(v) => handleChange("quantidade", v)} keyboardType="numeric" />
 
       <View style={styles.row}>
-        <TextInput style={styles.smallInput} placeholder="Preço de custo" value={form.precoCusto} onChangeText={(v) => handleChange("precoCusto", v)} keyboardType="decimal-pad" />
-        <TextInput style={[styles.smallInput, { backgroundColor: '#eee' }]} value="100%" editable={false} />
+        <TextInput style={styles.smallInput} placeholder="Preço de custo" value={form.precoCusto} onChangeText={(v) =>
+          handleChange("precoCusto", 'R$ ' + (parseFloat(v.replace(/[^0-9]/g, "")) / 100).toFixed(2))
+        }
+          keyboardType="decimal-pad" />
+        <TextInput style={[styles.smallInput, { backgroundColor: '#eee' }]} value={lucro} editable={false} />
       </View>
-      <TextInput style={styles.input} placeholder="Preço de venda" value={form.precoVenda} onChangeText={(v) => handleChange("precoVenda", v)} keyboardType="decimal-pad" />
+      <TextInput style={styles.input} placeholder="Preço de venda" value={form.precoVenda} onChangeText={(v) =>
+        handleChange("precoVenda", 'R$ ' + (parseFloat(v.replace(/[^0-9]/g, "")) / 100).toFixed(2))
+      } keyboardType="decimal-pad" />
 
       <Text style={styles.section}>Imagens</Text>
       <View style={styles.imageRow}>
