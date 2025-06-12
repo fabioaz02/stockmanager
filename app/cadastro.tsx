@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { get, ref } from "firebase/database";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { ref, set } from "firebase/database";
 import { useState } from "react";
 import {
   Alert,
@@ -16,28 +16,41 @@ import {
 } from "react-native";
 import { auth, database } from "../firebaseConfig";
 
-export default function LoginScreen() {
+export default function CadastroScreen() {
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [confirmaEmail, setConfirmaEmail] = useState("");
   const [senha, setSenha] = useState("");
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleCadastro = async () => {
+    if (!nome || !email || !confirmaEmail || !senha) {
+      Alert.alert("Erro", "Preencha todos os campos.");
+      return;
+    }
+
+    if (email !== confirmaEmail) {
+      Alert.alert("Erro", "Os e-mails não coincidem.");
+      return;
+    }
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
       const user = userCredential.user;
 
-      const userRef = ref(database, `usuarios/${user.uid}`);
-      const snapshot = await get(userRef);
+      await updateProfile(user, { displayName: nome });
 
-      if (snapshot.exists()) {
-        console.log("Usuário autenticado:", snapshot.val());
-      } else {
-        console.warn("Usuário autenticado mas sem dados no banco.");
-      }
+      await set(ref(database, `usuarios/${user.uid}`), {
+        uid: user.uid,
+        nome,
+        email,
+        tipo: "estoquista",
+        criadoEm: new Date().toISOString(),
+      });
 
-      router.replace("/(tabs)"); // redireciona para as tabs
+      router.replace("/"); // redireciona para as tabs
     } catch (error: any) {
-      Alert.alert("Erro ao fazer login", error.message);
+      Alert.alert("Erro ao cadastrar", error.message);
     }
   };
 
@@ -49,16 +62,35 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.iconContainer}>
-          <Ionicons name="cube-outline" size={120} color="#00AEEF" />
+          <Ionicons name="person-add-outline" size={120} color="#00AEEF" />
         </View>
 
         <View style={styles.form}>
+          <Text style={styles.label}>Nome completo:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nome"
+            value={nome}
+            onChangeText={setNome}
+          />
+
           <Text style={styles.label}>E-mail:</Text>
           <TextInput
             style={styles.input}
             placeholder="E-mail"
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.label}>Confirmar e-mail:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirme o e-mail"
+            value={confirmaEmail}
+            onChangeText={setConfirmaEmail}
+            keyboardType="email-address"
             autoCapitalize="none"
           />
 
@@ -71,12 +103,12 @@ export default function LoginScreen() {
             secureTextEntry
           />
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Entrar</Text>
+          <TouchableOpacity style={styles.button} onPress={handleCadastro}>
+            <Text style={styles.buttonText}>Cadastrar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.push("/cadastro")}>
-            <Text style={styles.register}>Cadastre-se</Text>
+          <TouchableOpacity onPress={() => router.replace("/login")}>
+            <Text style={styles.register}>Já tem conta? Entrar</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
