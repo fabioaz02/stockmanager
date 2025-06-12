@@ -1,8 +1,11 @@
 import { Entypo, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { onValue, ref } from 'firebase/database';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     FlatList,
+    Image,
     Modal,
     StyleSheet,
     Text,
@@ -10,22 +13,13 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-
-const produtosMock = Array.from({ length: 8 }, (_, i) => ({
-    id: i.toString(),
-    nome: `Produto ${i + 1}`,
-    quantidade: 9,
-    valor: 'R$ 00,00',
-    codigo: '0000',
-    referencia: 'ABC1',
-    peso: '0kg',
-    dimensoes: '1x1x1m',
-}));
-
+import { auth, database } from '../../firebaseConfig';
 
 export default function ProdutosScreen() {
-    const [selected, setSelected] = useState(null);
+    const [produtos, setProdutos] = useState<any[]>([]);
+    const [selected, setSelected] = useState<any | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const abrirModal = (produto: any) => {
@@ -38,9 +32,30 @@ export default function ProdutosScreen() {
         setSelected(null);
     };
 
+    useEffect(() => {
+        const uid = auth.currentUser?.uid;
+        if (!uid) return;
+
+        const produtosRef = ref(database, `estoque/${uid}`);
+
+        const unsubscribe = onValue(produtosRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const lista = Object.keys(data).map((id) => ({
+                    id,
+                    ...data[id],
+                }));
+                setProdutos(lista);
+            } else {
+                setProdutos([]);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     return (
         <View style={styles.container}>
-
             {/* Filtros e Busca */}
             <View style={styles.filtros}>
                 <Ionicons name="reorder-three" size={24} />
@@ -52,53 +67,80 @@ export default function ProdutosScreen() {
                 </View>
             </View>
 
-            {/* Lista de Produtos */}
-            <FlatList
-                data={produtosMock}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                columnWrapperStyle={styles.cardRow}
-                contentContainerStyle={styles.cardContainer}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card} onPress={() => abrirModal(item)}>
-                        <Entypo name="image" size={48} color="#333" />
-                        <Text style={styles.nome}>{item.nome}</Text>
-                        <Text style={styles.texto}>
-                            Qt: {item.quantidade}   {item.valor}
-                        </Text>
-                        <TouchableOpacity style={styles.botaoEditar}>
-                            <Text style={styles.textoBotao}>Editar</Text>
+            {loading ? (
+                <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+            ) : (
+                <FlatList
+                    data={produtos}
+                    keyExtractor={(item) => item.id}
+                    numColumns={2}
+                    columnWrapperStyle={styles.cardRow}
+                    contentContainerStyle={styles.cardContainer}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity style={styles.card} onPress={() => abrirModal(item)}>
+                            {item.imagens?.[0] ? (
+                                <Image source={{ uri: item.imagens[0] }} style={{ width: 48, height: 48 }} />
+                            ) : (
+                                <Entypo name="image" size={48} color="#333" />
+                            )}
+                            <Text style={styles.nome}>{item.nome}</Text>
+                            <Text style={styles.texto}>
+                                Qt: {item.quantidade} R$ {Number(item.precoVenda).toFixed(2)}
+                            </Text>
+                            <TouchableOpacity
+                                style={styles.botaoEditar}
+                                onPress={() => router.push(`/produtos/cadastrar?produtoId=${item.id}`)}
+                            >
+                                <Text style={styles.textoBotao}>Editar</Text>
+                            </TouchableOpacity>
                         </TouchableOpacity>
-                    </TouchableOpacity>
-                )}
-            />
+                    )}
+                />
+            )}
 
-            {/* Modal */}
+            {/* Modal de Detalhes */}
             <Modal transparent visible={modalVisible} animationType="fade">
                 <View style={styles.overlay}>
                     <View style={styles.modal}>
-                        <Entypo name="image" size={64} />
+                        {selected?.imagens?.[0] ? (
+                            <Image source={{ uri: selected.imagens[0] }} style={{ width: 64, height: 64 }} />
+                        ) : (
+                            <Entypo name="image" size={64} />
+                        )}
                         <View style={styles.modalRow}>
-                            <Text style={styles.modalLabel}>Código: {selected?.codigo}</Text>
-                            <Text style={styles.modalLabel}>Referência: {selected?.referencia}</Text>
+                            <Text style={styles.modalLabel}>Código: {selected?.codigo || "--"}</Text>
+                            <Text style={styles.modalLabel}>Referência: {selected?.referencia || "--"}</Text>
                         </View>
                         <Text style={styles.modalText}>Nome: {selected?.nome}</Text>
                         <View style={styles.modalRow}>
                             <Text style={styles.modalText}>Quantidade: {selected?.quantidade}</Text>
-                            <Text style={styles.modalText}>Valor: {selected?.valor}</Text>
+                            <Text style={styles.modalText}>Valor: R$ {Number(selected?.precoVenda || 0).toFixed(2)}</Text>
                         </View>
-                        <Text style={styles.modalText}>Peso: {selected?.peso}</Text>
-                        <Text style={styles.modalText}>Dimensões: {selected?.dimensoes}</Text>
+                        <Text style={styles.modalText}>Peso: {selected?.peso || "0kg"}</Text>
+                        <Text style={styles.modalText}>Dimensões: {selected?.dimensoes || "--"}</Text>
                         <Text style={[styles.modalText, { marginTop: 8 }]}>Fotos</Text>
                         <View style={styles.fotos}>
-                            {[1, 2, 3].map((_, i) => (
-                                <Entypo key={i} name="image" size={40} style={{ marginHorizontal: 4 }} />
-                            ))}
+                            {selected?.imagens?.length ? (
+                                selected.imagens.map((img: string, i: number) => (
+                                    <Image
+                                        key={i}
+                                        source={{ uri: img }}
+                                        style={{ width: 40, height: 40, marginHorizontal: 4, borderRadius: 4 }}
+                                    />
+                                ))
+                            ) : (
+                                <Text style={{ fontSize: 12, fontStyle: 'italic' }}>Nenhuma imagem</Text>
+                            )}
                         </View>
 
-                        {/* Botões lado a lado */}
                         <View style={styles.modalButtons}>
-                            <TouchableOpacity style={styles.botaoEditarModal}>
+                            <TouchableOpacity
+                                style={styles.botaoEditarModal}
+                                onPress={() => {
+                                    router.push(`/produtos/cadastrar?produtoId=${selected.id}`);
+                                    fecharModal();
+                                }}
+                            >
                                 <Text style={styles.textoBotao}>Editar</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.botaoFecharModal} onPress={fecharModal}>
@@ -112,13 +154,14 @@ export default function ProdutosScreen() {
             {/* Botão flutuante */}
             <TouchableOpacity
                 style={styles.fab}
-                onPress={() => router.push('/produtos/cadastrar')}
+                onPress={() => router.push("/produtos/cadastrar")}
             >
                 <Ionicons name="add-circle-outline" size={28} color="#fff" />
             </TouchableOpacity>
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#cceaff', padding: 12 },
