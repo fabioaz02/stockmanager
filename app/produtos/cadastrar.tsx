@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { get, ref, set, update } from "firebase/database";
@@ -12,13 +12,34 @@ import { auth, database } from "../../firebaseConfig";
 
 export default function CadastroProduto() {
   const router = useRouter();
-  const { produtoId } = useLocalSearchParams(); // se presente, é edição
+  const { produtoId } = useLocalSearchParams();
 
   const [form, setForm] = useState({
     nome: "", descricao: "", codigo: "", referencia: "", categoria: "",
     marca: "", peso: "", dimensoes: "", quantidade: "", precoCusto: "",
     precoVenda: "", imagens: [] as string[],
   });
+  const [removidas, setRemovidas] = useState<string[]>([]);
+
+  const handleRemoveImage = (img: string) => {
+    Alert.alert("Remover imagem", "Deseja realmente remover esta imagem?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Remover",
+        style: "destructive",
+        onPress: () => {
+          setForm((prev) => ({
+            ...prev,
+            imagens: prev.imagens.filter((i) => i !== img),
+          }));
+          setRemovidas((prev) => [...prev, img]);
+        },
+      },
+    ]);
+  };
 
   const lucro = (() => {
     const custo = parseFloat(form.precoCusto.replace(/[^0-9,.-]+/g, '').replace(',', '.'));
@@ -188,7 +209,15 @@ export default function CadastroProduto() {
       <Text style={styles.section}>Imagens</Text>
       <View style={styles.imageRow}>
         {form.imagens.map((img, i) => (
-          <Image key={i} source={{ uri: img }} style={styles.imgPreview} />
+          <View key={i} style={styles.imageWrapper}>
+            <Image source={{ uri: img }} style={styles.imgPreview} />
+            <TouchableOpacity
+              style={styles.removeIcon}
+              onPress={() => handleRemoveImage(img)}
+            >
+              <MaterialIcons name="cancel" size={20} color="#ff4444" />
+            </TouchableOpacity>
+          </View>
         ))}
         <TouchableOpacity style={styles.addImage} onPress={handleImagePick}>
           <Ionicons name="camera" size={48} />
@@ -288,4 +317,15 @@ const styles = StyleSheet.create({
   },
   btnText: { color: '#fff', fontWeight: 'bold' },
   btnTextCancel: { color: '#fff', fontWeight: 'bold' },
+    imageWrapper: {
+    position: 'relative',
+  },
+  removeIcon: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 2,
+  },
 });
