@@ -58,9 +58,6 @@ export default function ProdutosScreen() {
         <View style={styles.container}>
             {/* Filtros e Busca */}
             <View style={styles.filtros}>
-                <Ionicons name="reorder-three" size={24} />
-                <Ionicons name="grid" size={24} style={styles.filtroIcon} />
-                <Ionicons name="list" size={24} style={styles.filtroIcon} />
                 <View style={styles.searchContainer}>
                     <TextInput placeholder="Buscar..." style={styles.searchInput} />
                     <Ionicons name="search" size={20} />

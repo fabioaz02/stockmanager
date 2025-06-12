@@ -1,127 +1,214 @@
-import { Entypo } from '@expo/vector-icons';
+import { auth, database } from '@/firebaseConfig';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { onValue, push, ref, update } from 'firebase/database';
+import { useEffect, useRef, useState } from 'react';
 import {
+  FlatList,
+  Keyboard,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 
 export default function NovaMovimentacao() {
   const router = useRouter();
-
   const [operacao, setOperacao] = useState<'ENTRADA' | 'SAÍDA'>('ENTRADA');
-  const [showOperacao, setShowOperacao] = useState(false);
+  const [quantidade, setQuantidade] = useState('');
+  const [busca, setBusca] = useState('');
+  const [produtos, setProdutos] = useState<any[]>([]);
+  const [sugestoes, setSugestoes] = useState<any[]>([]);
+  const [produtoSelecionado, setProdutoSelecionado] = useState<any>(null);
+  const [showSugestoes, setShowSugestoes] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
-  const dataAtual = new Date().toLocaleDateString('pt-BR');
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    const produtosRef = ref(database, `usuarios/${uid}/produtos`);
+    onValue(produtosRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const lista = Object.entries(data).map(([id, p]: any) => ({
+        id,
+        nome: p.nome,
+        codigo: p.codigo,
+        referencia: p.referencia,
+        precoVenda: p.precoVenda || 0,
+        quantidade: p.quantidade || 0,
+      }));
+      setProdutos(lista);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!busca) {
+      setSugestoes([]);
+      return;
+    }
+
+    const filtro = busca.toLowerCase();
+    const resultados = produtos
+      .filter((p) =>
+        p.nome?.toLowerCase().includes(filtro) ||
+        p.codigo?.toLowerCase().includes(filtro) ||
+        p.referencia?.toLowerCase().includes(filtro)
+      )
+      .slice(0, 5);
+
+    setSugestoes(resultados.length > 0 ? resultados : [{ id: '0', nome: 'Nenhum resultado encontrado' }]);
+  }, [busca]);
+
+  const selecionarProduto = (produto: any) => {
+    if (produto.id === '0') return;
+    setProdutoSelecionado(produto);
+    setBusca(`${produto.codigo} - ${produto.nome}`);
+    setShowSugestoes(false);
+    Keyboard.dismiss();
+  };
+
+  const salvar = () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid || !produtoSelecionado) return;
+
+    const data = new Date();
+    const dataFormatada = `${data.getFullYear()}-${data.getMonth() + 1}-${data.getDate()}`;
+
+    const qtd = parseInt(quantidade);
+    const novaQtd =
+      operacao === 'ENTRADA'
+        ? produtoSelecionado.quantidade + qtd
+        : produtoSelecionado.quantidade - qtd;
+
+    const movRef = push(ref(database, `usuarios/${uid}/movimentacoes`));
+    const novaMov = {
+      codigo: produtoSelecionado.codigo,
+      referencia: produtoSelecionado.referencia,
+      nome: produtoSelecionado.nome,
+      operacao,
+      quantidade: qtd,
+      data: new Date().toISOString(),
+      valor: produtoSelecionado.precoVenda,
+    };
+
+    const updates: any = {};
+    updates[`usuarios/${uid}/movimentacoes/${movRef.key}`] = novaMov;
+    updates[`usuarios/${uid}/produtos/${produtoSelecionado.id}/quantidade`] = novaQtd;
+    updates[`usuarios/${uid}/produtos/${produtoSelecionado.id}/ultima_movimentacao`] = new Date().toISOString();
+
+    update(ref(database), updates).then(() => router.back());
+  };
 
   return (
-    <ScrollView style={styles.container}>
+    <TouchableWithoutFeedback onPress={() => {
+      Keyboard.dismiss();
+      setShowSugestoes(false);
+    }}>
+      <ScrollView style={styles.container}>
+        {/* Campo de busca */}
+        <Text style={styles.label}>Código, Referência ou Nome</Text>
+        <TextInput
+          ref={inputRef}
+          style={styles.input}
+          placeholder="Digite para buscar"
+          value={busca}
+          onChangeText={(t) => {
+            setBusca(t);
+            setShowSugestoes(true);
+            setProdutoSelecionado(null);
+          }}
+        />
+        {showSugestoes && sugestoes.length > 0 && (
+          <FlatList
+            data={sugestoes}
+            style={styles.listaSugestoes}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.sugestaoItem}
+                onPress={() => selecionarProduto(item)}
+              >
+                <Text style={styles.sugestaoTexto}>
+                  {item.id === '0' ? 'Nenhum resultado encontrado' : `${item.codigo} - ${item.nome}`}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        )}
 
-      {/* Código/Referência */}
-      <Text style={styles.label}>Código/Referência</Text>
-      <View style={styles.row}>
-        <TextInput style={styles.input} placeholder="Digite o código ou referência" />
-        <TouchableOpacity style={styles.iconButton}>
-          <Entypo name="magnifying-glass" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
+        {/* Nome do produto */}
+        <Text style={styles.label}>Nome do Produto</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: '#eee' }]}
+          value={produtoSelecionado?.nome || ''}
+          editable={false}
+        />
 
-      {/* Nome do produto */}
-      <Text style={styles.label}>Nome do produto</Text>
-      <TextInput
-        style={styles.input}
-        value="nome nome nome nome nome"
-        editable={false}
-      />
-
-      {/* Operação e Quantidade */}
-      <View style={styles.row}>
-        <View style={styles.container}>
-          <Text style={styles.label}>Operação</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={operacao}
-              onValueChange={(valor) => setOperacao(valor)}
-              mode="dropdown"
-            >
-              <Picker.Item label="ENTRADA" value="ENTRADA" />
-              <Picker.Item label="SAÍDA" value="SAÍDA" />
-            </Picker>
+        {/* Operação e quantidade */}
+        <View style={styles.row}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Operação</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker selectedValue={operacao} onValueChange={setOperacao}>
+                <Picker.Item label="ENTRADA" value="ENTRADA" />
+                <Picker.Item label="SAÍDA" value="SAÍDA" />
+              </Picker>
+            </View>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Quantidade</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Qtd"
+              keyboardType="numeric"
+              value={quantidade}
+              onChangeText={setQuantidade}
+            />
           </View>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.label}>Quantidade</Text>
-          <TextInput style={styles.input} placeholder="Qtd" keyboardType="numeric" />
+
+        {/* Data */}
+        <Text style={styles.label}>Data</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: '#eee' }]}
+          value={new Date().toLocaleDateString('pt-BR')}
+          editable={false}
+        />
+
+        {/* Botões */}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.btnPrimary} onPress={salvar}>
+            <Text style={styles.btnText}>Adicionar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnCancel} onPress={() => router.back()}>
+            <Text style={styles.btnTextCancel}>Cancelar</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-
-      {/* Data */}
-      <Text style={styles.label}>Data</Text>
-      <TextInput
-        style={[styles.input, { backgroundColor: '#eee' }]}
-        value={dataAtual}
-        editable={false}
-      />
-
-      {/* Botões */}
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.btnPrimary}>
-          <Text style={styles.btnText}>Adicionar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btnCancel} onPress={() => router.back()}>
-          <Text style={styles.btnTextCancel}>Cancelar</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#cceaff', padding: 16 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  title: { fontSize: 18, fontWeight: 'bold', color: '#003366' },
   label: { fontWeight: '500', marginBottom: 4, marginTop: 8 },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
-    flex: 1,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  iconButton: {
-    backgroundColor: '#1c4e66',
-    padding: 12,
-    borderRadius: 8,
-    justifyContent: 'center',
-  },
-  selectBox: {
+  pickerWrapper: {
     backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#aaa',
-    marginTop: 4,
+    borderColor: '#ccc',
   },
-  optionItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
+  row: { flexDirection: 'row', gap: 12, marginTop: 8 },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -144,10 +231,21 @@ const styles = StyleSheet.create({
   },
   btnText: { color: '#fff', fontWeight: 'bold' },
   btnTextCancel: { color: '#fff', fontWeight: 'bold' },
-  pickerWrapper: {
+  listaSugestoes: {
     backgroundColor: '#fff',
     borderRadius: 8,
+    marginBottom: 8,
+    maxHeight: 200,
     borderWidth: 1,
     borderColor: '#ccc',
+  },
+  sugestaoItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  sugestaoTexto: {
+    fontSize: 14,
   },
 });
