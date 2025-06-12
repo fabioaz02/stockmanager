@@ -117,12 +117,13 @@ export default function Home() {
 
   return (
     <ScrollView style={styles.container}>
+
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.card}
           onPress={() => router.push('/produtos/cadastrar')}
         >
-          <Ionicons name="add-circle-outline" size={40} color="#000" />
+          <Ionicons name="add-circle-outline" size={36} color="#004466" />
           <Text style={styles.cardText}>Novo Produto</Text>
         </TouchableOpacity>
 
@@ -130,12 +131,12 @@ export default function Home() {
           style={styles.card}
           onPress={() => router.push('/movimentacoes/cadastrar')}
         >
-          <Ionicons name="add-outline" size={40} color="#000" />
+          <Ionicons name="swap-horizontal" size={36} color="#004466" />
           <Text style={styles.cardText}>Nova Movimentação</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.section}>Itens em falta (máx. 5)</Text>
+      <Text style={styles.section}>Itens em falta</Text>
       {produtos.length > 0 ? (
         produtos.map((p) => (
           <View key={p.id} style={styles.row}>
@@ -146,7 +147,7 @@ export default function Home() {
           </View>
         ))
       ) : (
-        <Text style={styles.placeholder}>Nenhum item encontrado</Text>
+        <Text style={styles.placeholder}>Nenhum item em falta</Text>
       )}
 
       <Text style={styles.section}>Movimentações recentes</Text>
@@ -168,29 +169,57 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#cceaff', padding: 16 },
-  actions: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
     width: '48%',
-    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  cardText: { marginTop: 8, fontSize: 12 },
-  section: { marginTop: 20, fontWeight: 'bold', fontSize: 14, marginBottom: 8 },
+  cardText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#004466',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  section: {
+    marginTop: 16,
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#003344',
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#fff',
-    padding: 8,
-    marginBottom: 4,
-    borderRadius: 4,
-    flexWrap: 'wrap',
+    padding: 12,
+    marginBottom: 6,
+    borderRadius: 6,
   },
-  cell: { width: '23%', textAlign: 'center', fontSize: 12 },
-  placeholder: {
+  cell: {
+    width: '23%',
+    textAlign: 'center',
     fontSize: 12,
+    color: '#333',
+  },
+  placeholder: {
+    fontSize: 13,
     fontStyle: 'italic',
     color: '#555',
     textAlign: 'center',

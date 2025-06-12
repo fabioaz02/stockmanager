@@ -38,13 +38,11 @@ export default function Movimentacoes() {
                 quantidade: m.quantidade,
             }));
 
-            // Agrupar por data
             const agrupadoPorData = lista.reduce((acc, item) => {
                 acc[item.data] = acc[item.data] ? [...acc[item.data], item] : [item];
                 return acc;
             }, {} as Record<string, Movimentacao[]>);
 
-            // Ordenar as datas decrescentemente
             const ordenado = Object.keys(agrupadoPorData)
                 .sort((a, b) => {
                     const da = new Date(a.split('/').reverse().join('-'));
@@ -84,15 +82,14 @@ export default function Movimentacoes() {
                         {agrupado[data].map((mov) => (
                             <View key={mov.id} style={styles.row}>
                                 <Text style={styles.cell}>{mov.produto}</Text>
-                                <Text style={styles.cell}>{mov.tipo}</Text>
-                                <Text style={styles.cell}>{mov.quantidade}</Text>
+                                <Text style={[styles.cell, styles.tipo]}>{mov.tipo}</Text>
+                                <Text style={[styles.cell, styles.qtd]}>Qnt. {mov.quantidade}</Text>
                             </View>
                         ))}
                     </View>
                 )}
             />
 
-            {/* Botão flutuante */}
             <TouchableOpacity
                 style={styles.fab}
                 onPress={() => router.push('/movimentacoes/cadastrar')}
@@ -105,38 +102,58 @@ export default function Movimentacoes() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#CFEAFF', padding: 12 },
-    titulo: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },
     blocoData: {
         backgroundColor: '#fff',
         marginBottom: 12,
-        borderRadius: 6,
+        borderRadius: 10,
         overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
     },
     headerData: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#e0e0e0',
-        padding: 8,
+        backgroundColor: '#e0f0f8',
+        padding: 10,
     },
-    dataTexto: { fontWeight: 'bold' },
+    dataTexto: { fontWeight: 'bold', color: '#1c4e66' },
     row: {
         flexDirection: 'row',
         borderTopWidth: 1,
-        borderColor: '#ccc',
-        padding: 8,
-        justifyContent: 'space-between',
+        borderColor: '#d1d1d1',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        alignItems: 'center',
     },
-    cell: { width: '33%', textAlign: 'center', fontSize: 12 },
+    cell: {
+        flex: 1,
+        fontSize: 13,
+        textAlign: 'center',
+    },
+    tipo: {
+        color: '#1c4e66',
+        fontWeight: '500',
+    },
+    qtd: {
+        fontWeight: 'bold',
+    },
     fab: {
         position: 'absolute',
         bottom: 20,
         right: 20,
         backgroundColor: '#1c4e66',
-        width: 52,
-        height: 52,
-        borderRadius: 26,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        elevation: 4,
     },
 });
