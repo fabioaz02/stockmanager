@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "stockmanager",
+    "name": "Stock Manager",
     "slug": "stockmanager",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "stockmanager",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
