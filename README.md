@@ -1,50 +1,65 @@
-# Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# 📱 Estoque Manager – App de Controle de Estoque
 
-## Get started
+## ✅ Funcionalidades principais
 
-1. Install dependencies
+- **Login e Cadastro de Usuários**
+  - Autenticação segura com Firebase Authentication
+  - Validação de e-mail e senha
+  - Tratamento de erros de login (e-mail inválido, senha errada, etc.)
 
-   ```bash
-   npm install
-   ```
+- **Gestão de Produtos**
+  - Cadastro de novos produtos com os campos: Nome, Descrição, Código, Referência, Categoria, Marca, Peso, Dimensões, Quantidade, Preço de Custo, Preço de Venda e Imagens
+  - Edição de produtos existentes
+  - Upload de fotos diretamente da câmera
+  - Visualização detalhada dos produtos via modal
+  - Remoção de imagens com confirmação, só aplicada ao salvar
+  - Máscaras de input: valores monetários (R$), peso (kg), dimensões (cm), etc.
 
-2. Start the app
+- **Controle de Movimentações**
+  - Registro de movimentações de **Entrada** e **Saída** de estoque
+  - Busca de produtos por Nome, Código ou Referência com autocomplete estilo Amazon
+  - Atualização automática da quantidade em estoque após cada movimentação
+  - Listagem de movimentações agrupadas por data
 
-   ```bash
-   npx expo start
-   ```
+- **Tela Inicial – Dashboard**
+  - Exibe os **produtos em falta (quantidade = 0)** e os **produtos com estoque baixo (menos de 3 unidades)**
+  - Mostra também as **últimas movimentações**
+  - Formatação amigável para valores monetários e datas de última movimentação
 
-In the output, you'll find options to open the app in a
+- **Persistência em Nuvem**
+  - Todos os dados são armazenados no **Firebase Realtime Database**, isolados por usuário (`usuarios/{uid}/`)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Proteção de Dados**
+  - Regras de segurança Firebase configuradas para permitir acesso **somente a usuários autenticados**
+  - Restrição da API key por **SHA-1/SHA-256** da assinatura do app
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## ✅ Tecnologias utilizadas
 
-## Get a fresh project
+- **Frontend:** React Native com Expo Router
+- **Banco de Dados:** Firebase Realtime Database
+- **Autenticação:** Firebase Authentication
+- **Build e Deploy:** EAS Build (Expo Application Services)
+- **Linguagem:** TypeScript
+- **UI & Componentes:** React Native + Expo Vector Icons + React Native Picker
+- **Câmera:** Expo ImagePicker (acesso à câmera para fotos dos produtos)
 
-When you're ready, run:
+## ✅ Peculiaridades e decisões arquiteturais
 
-```bash
-npm run reset-project
-```
+- Estrutura modular de pastas com navegação por Stack e Tabs usando **Expo Router**
+- Integração direta com o **Realtime Database** para escrita/leitura de produtos e movimentações
+- Validação de campos e formatação (máscaras) **antes da persistência**
+- Uso de **KeyboardAvoidingView + ScrollView + TouchableWithoutFeedback** para evitar problemas de layout ao abrir o teclado
+- As imagens dos produtos são armazenadas **como base64 no banco**, facilitando o envio sem Firebase Storage
+- Placeholders com `placeholderTextColor` específico para garantir visibilidade no Android
+- Cálculo automático da margem de lucro (%) na tela de cadastro de produtos
+- Busca com autocomplete otimizado por quantidade de caracteres digitados e limite de resultados (5)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+## ✅ Apoio na resolução de problemas
 
-To learn more about developing your project with Expo, look at the following resources:
+Durante o desenvolvimento deste projeto, foram utilizadas consultas e auxílios de ferramentas como:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **ChatGPT (OpenAI)** – para auxílio na resolução de problemas, melhorias de layout e estruturação de código
+- **StackOverflow** – solução direta para o problema de autenticação do Firebase no Expo, conforme a thread:
+  [https://stackoverflow.com/questions/79602687/react-native-expo-firebase-auth-component-auth-has-not-been-registered-yet/79603601#79603601](https://stackoverflow.com/questions/79602687/react-native-expo-firebase-auth-component-auth-has-not-been-registered-yet/79603601#79603601)
