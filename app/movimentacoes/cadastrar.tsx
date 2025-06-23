@@ -115,6 +115,7 @@ export default function NovaMovimentacao() {
             ref={inputRef}
             style={styles.input}
             placeholder="Buscar produto..."
+            placeholderTextColor="#999"
             value={busca}
             onChangeText={(text) => {
               setBusca(text);
@@ -147,7 +148,7 @@ export default function NovaMovimentacao() {
         <Text style={styles.label}>Nome do Produto</Text>
         <TextInput
           style={[styles.input, { backgroundColor: '#eee' }]}
-          value={produtoSelecionado?.nome || ''}
+          value={produtoSelecionado?.nome || 'Nenhum produto selecionado'}
           editable={false}
         />
 
@@ -156,7 +157,7 @@ export default function NovaMovimentacao() {
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>Operação</Text>
             <View style={styles.pickerWrapper}>
-              <Picker selectedValue={operacao} onValueChange={setOperacao} style={{ fontSize: 12 }}>
+              <Picker selectedValue={operacao} onValueChange={setOperacao} style={{ fontSize: 12 , color: '#000' }}>
                 <Picker.Item label="ENTRADA" value="ENTRADA" />
                 <Picker.Item label="SAÍDA" value="SAÍDA" />
               </Picker>
@@ -166,7 +167,8 @@ export default function NovaMovimentacao() {
             <Text style={styles.label}>Quantidade</Text>
             <TextInput
               style={styles.input}
-              placeholder="Qtd"
+              placeholder="0"
+              placeholderTextColor="#999"
               keyboardType="numeric"
               value={quantidade}
               onChangeText={setQuantidade}
@@ -204,6 +206,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    color: "#000"
   },
   pickerWrapper: {
     backgroundColor: '#fff',

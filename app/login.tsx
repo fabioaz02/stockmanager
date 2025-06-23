@@ -144,6 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderColor: "#c0e0ff",
     borderWidth: 1,
+    color: "#000"
   },
   passwordWrapper: {
     position: "relative",
