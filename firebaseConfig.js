@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCy83GcDbo7rO7IWu-yEj-FDLjRgwLUXpg",
+  apiKey: "AIzaSyBjo21ItJl0jtavYC-LluY6mWgAXf_1Z30",
   authDomain: "stockmanager-33188.firebaseapp.com",
   databaseURL: "https://stockmanager-33188-default-rtdb.firebaseio.com",
   projectId: "stockmanager-33188",
