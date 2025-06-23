@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { get, ref } from "firebase/database";
 import { useState } from "react";
 import {
   Alert,
@@ -16,11 +15,12 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { auth, database } from "../firebaseConfig";
+import { auth } from "../firebaseConfig";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -30,19 +30,8 @@ export default function LoginScreen() {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
-      const user = userCredential.user;
-
-      const userRef = ref(database, `usuarios/${user.uid}`);
-      const snapshot = await get(userRef);
-
-      // if (snapshot.exists()) {
-      //   console.log("Usuário autenticado:", snapshot.val());
-      // } else {
-      //   console.warn("Usuário autenticado mas sem dados no banco.");
-      // }
-
-      router.replace("/(tabs)"); // redireciona para as tabs
+      await signInWithEmailAndPassword(auth, email, senha);
+      router.replace("/(tabs)");
     } catch (error: any) {
       let mensagem = "Erro ao fazer login";
 
@@ -59,8 +48,8 @@ export default function LoginScreen() {
         case "auth/too-many-requests":
           mensagem = "Muitas tentativas. Tente novamente mais tarde.";
           break;
-         case "auth/invalid-credential":
-          mensagem = "Dados inválidos";
+        case "auth/invalid-credential":
+          mensagem = "Dados inválidos.";
           break;
         case "auth/internal-error":
           mensagem = "Erro interno. Verifique os campos preenchidos.";
@@ -92,19 +81,34 @@ export default function LoginScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="E-mail"
+                placeholderTextColor="#888"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
+                keyboardType="email-address"
               />
 
               <Text style={styles.label}>Senha:</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Senha"
-                value={senha}
-                onChangeText={setSenha}
-                secureTextEntry
-              />
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Senha"
+                  placeholderTextColor="#888"
+                  value={senha}
+                  onChangeText={setSenha}
+                  secureTextEntry={!mostrarSenha}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setMostrarSenha(!mostrarSenha)}
+                >
+                  <Ionicons
+                    name={mostrarSenha ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color="#555"
+                  />
+                </TouchableOpacity>
+              </View>
 
               <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Entrar</Text>
@@ -113,6 +117,11 @@ export default function LoginScreen() {
               <TouchableOpacity onPress={() => router.push("/cadastro")}>
                 <Text style={styles.register}>Cadastre-se</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => router.push("/recuperarSenha")}>
+                <Text style={styles.register}>Esqueci minha senha</Text>
+              </TouchableOpacity>
+
             </View>
           </View>
         </ScrollView>
@@ -128,12 +137,30 @@ const styles = StyleSheet.create({
   form: { width: "100%" },
   label: { marginBottom: 4, color: "#003366" },
   input: {
-    backgroundColor: "#fff", padding: 12, borderRadius: 8,
-    marginBottom: 16, fontSize: 16, borderColor: "#c0e0ff", borderWidth: 1,
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    fontSize: 16,
+    borderColor: "#c0e0ff",
+    borderWidth: 1,
+  },
+  passwordWrapper: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 12,
+    top: 14,
   },
   button: {
-    backgroundColor: "#004c6d", paddingVertical: 14, borderRadius: 8,
-    alignItems: "center", marginTop: 8, marginBottom: 24,
+    backgroundColor: "#004c6d",
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 24,
   },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   register: { color: "#004c6d", textAlign: "center", textDecorationLine: "underline", fontSize: 15 },
