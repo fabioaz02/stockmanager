@@ -73,10 +73,10 @@ export default function ProdutosScreen() {
             <View style={styles.filtros}>                
                 <TextInput
                     placeholder="Buscar por nome, código ou referência"
+                    placeholderTextColor="#999"
                     style={styles.searchInput}
                     value={busca}
                     onChangeText={setBusca}
-                    placeholderTextColor="#999"
                 />
             </View>
 

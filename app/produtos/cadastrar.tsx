@@ -165,25 +165,26 @@ export default function CadastroProduto() {
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.label}>Nome</Text>
-      <TextInput style={styles.input} value={form.nome} onChangeText={(v) => handleChange("nome", v)} />
+      <TextInput style={styles.input} value={form.nome} placeholder="Nome" placeholderTextColor="#999" onChangeText={(v) => handleChange("nome", v)} />
 
       <Text style={styles.label}>Descrição</Text>
-      <TextInput style={[styles.input, { height: 80 }]} multiline value={form.descricao} onChangeText={(v) => handleChange("descricao", v)} />
+      <TextInput style={[styles.input, { height: 80 }]} placeholder="Descrição do Produto" placeholderTextColor="#999" multiline value={form.descricao} onChangeText={(v) => handleChange("descricao", v)} />
 
       <Text style={styles.section}>Detalhamento</Text>
       <View style={styles.row}>
-        <TextInput style={[styles.smallInput, { backgroundColor: '#eee' }]} placeholder="Código" value={form.codigo} editable={false} />
-        <TextInput style={styles.smallInput} placeholder="Referência" value={form.referencia} onChangeText={(v) => handleChange("referencia", v)} />
+        <TextInput style={[styles.smallInput, { backgroundColor: '#eee' }]} placeholder="Código" placeholderTextColor="#999" value={form.codigo} editable={false} />
+        <TextInput style={styles.smallInput} placeholder="Referência" placeholderTextColor="#999" value={form.referencia} onChangeText={(v) => handleChange("referencia", v)} />
       </View>
       <View style={styles.row}>
-        <TextInput style={styles.smallInput} placeholder="Categoria" value={form.categoria} onChangeText={(v) => handleChange("categoria", v)} />
-        <TextInput style={styles.smallInput} placeholder="Marca" value={form.marca} onChangeText={(v) => handleChange("marca", v)} />
+        <TextInput style={styles.smallInput} placeholder="Categoria" placeholderTextColor="#999" value={form.categoria} onChangeText={(v) => handleChange("categoria", v)} />
+        <TextInput style={styles.smallInput} placeholder="Marca" placeholderTextColor="#999" value={form.marca} onChangeText={(v) => handleChange("marca", v)} />
       </View>
       <View style={styles.row}>
-        <TextInput style={styles.smallInput} placeholder="Ex: 1.250kg" value={form.peso} onChangeText={(v) => handleChange("peso", (parseFloat(v.replace(/[^0-9]/g, "")) / 1000).toFixed(3) + 'kg')} />
+        <TextInput style={styles.smallInput} placeholder="Ex: 1.250kg" placeholderTextColor="#999" value={form.peso} onChangeText={(v) => handleChange("peso", (parseFloat(v.replace(/[^0-9]/g, "")) / 1000).toFixed(3) + 'kg')} />
         <TextInput
           style={styles.smallInput}
           placeholder="Ex: 10X20X30"
+          placeholderTextColor="#999"
           value={form.dimensoes}
           onChangeText={(v) =>
             handleChange("dimensoes", v.toUpperCase().replace(/\s+/g, ""))
@@ -193,16 +194,16 @@ export default function CadastroProduto() {
 
       <Text style={styles.section}>Preços e Custos</Text>
       <Text style={styles.label}>Quantidade</Text>
-      <TextInput style={styles.input} value={form.quantidade} onChangeText={(v) => handleChange("quantidade", v)} keyboardType="numeric" />
+      <TextInput style={styles.input} value={form.quantidade} placeholder="0" placeholderTextColor="#999" onChangeText={(v) => handleChange("quantidade", v)} keyboardType="numeric" />
 
       <View style={styles.row}>
-        <TextInput style={styles.smallInput} placeholder="Preço de custo" value={form.precoCusto} onChangeText={(v) =>
+        <TextInput style={styles.smallInput} placeholder="Preço de custo" placeholderTextColor="#999" value={form.precoCusto} onChangeText={(v) =>
           handleChange("precoCusto", 'R$ ' + (parseFloat(v.replace(/[^0-9]/g, "")) / 100).toFixed(2))
         }
           keyboardType="decimal-pad" />
         <TextInput style={[styles.smallInput, { backgroundColor: '#eee' }]} value={lucro} editable={false} />
       </View>
-      <TextInput style={styles.input} placeholder="Preço de venda" value={form.precoVenda} onChangeText={(v) =>
+      <TextInput style={styles.input} placeholder="Preço de venda" placeholderTextColor="#999" value={form.precoVenda} onChangeText={(v) =>
         handleChange("precoVenda", 'R$ ' + (parseFloat(v.replace(/[^0-9]/g, "")) / 100).toFixed(2))
       } keyboardType="decimal-pad" />
 
@@ -246,6 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
+    color: "#000"
   },
   row: {
     flexDirection: 'row',
@@ -258,6 +260,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 12,
+    color: "#000"
   },
   section: {
     fontWeight: 'bold',

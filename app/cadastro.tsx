@@ -70,6 +70,7 @@ export default function CadastroScreen() {
           <TextInput
             style={styles.input}
             placeholder="Nome"
+            placeholderTextColor="#888"
             value={nome}
             onChangeText={setNome}
           />
@@ -78,6 +79,7 @@ export default function CadastroScreen() {
           <TextInput
             style={styles.input}
             placeholder="E-mail"
+            placeholderTextColor="#888"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -88,6 +90,7 @@ export default function CadastroScreen() {
           <TextInput
             style={styles.input}
             placeholder="Confirme o e-mail"
+            placeholderTextColor="#888"
             value={confirmaEmail}
             onChangeText={setConfirmaEmail}
             keyboardType="email-address"
@@ -98,6 +101,7 @@ export default function CadastroScreen() {
           <TextInput
             style={styles.input}
             placeholder="Senha"
+            placeholderTextColor="#888"
             value={senha}
             onChangeText={setSenha}
             secureTextEntry
@@ -124,7 +128,7 @@ const styles = StyleSheet.create({
   label: { marginBottom: 4, color: "#003366" },
   input: {
     backgroundColor: "#fff", padding: 12, borderRadius: 8,
-    marginBottom: 16, fontSize: 16, borderColor: "#c0e0ff", borderWidth: 1,
+    marginBottom: 16, fontSize: 16, borderColor: "#c0e0ff", borderWidth: 1, color: "#000"
   },
   button: {
     backgroundColor: "#004c6d", paddingVertical: 14, borderRadius: 8,
