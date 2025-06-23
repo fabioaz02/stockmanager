@@ -1,65 +1,73 @@
+# Sock Manager 📦
 
-# 📱 Estoque Manager – App de Controle de Estoque
+Um aplicativo mobile de gerenciamento de estoque, desenvolvido em **React Native com Expo** e integração com **Firebase Realtime Database**.
 
-## ✅ Funcionalidades principais
+---
 
-- **Login e Cadastro de Usuários**
-  - Autenticação segura com Firebase Authentication
-  - Validação de e-mail e senha
-  - Tratamento de erros de login (e-mail inválido, senha errada, etc.)
+## ✅ Funcionalidades Principais
 
-- **Gestão de Produtos**
-  - Cadastro de novos produtos com os campos: Nome, Descrição, Código, Referência, Categoria, Marca, Peso, Dimensões, Quantidade, Preço de Custo, Preço de Venda e Imagens
-  - Edição de produtos existentes
-  - Upload de fotos diretamente da câmera
-  - Visualização detalhada dos produtos via modal
-  - Remoção de imagens com confirmação, só aplicada ao salvar
-  - Máscaras de input: valores monetários (R$), peso (kg), dimensões (cm), etc.
+- **Autenticação de Usuário (Firebase Auth)**  
+  Login, cadastro, recuperação de senha com envio de email automático.
 
-- **Controle de Movimentações**
-  - Registro de movimentações de **Entrada** e **Saída** de estoque
-  - Busca de produtos por Nome, Código ou Referência com autocomplete estilo Amazon
-  - Atualização automática da quantidade em estoque após cada movimentação
-  - Listagem de movimentações agrupadas por data
+- **Cadastro de Produtos**  
+  Inclui nome, descrição, código, referência, categoria, marca, peso, dimensões, quantidade, preço de custo e preço de venda.  
+  Suporte a **upload de imagens via câmera**.
 
-- **Tela Inicial – Dashboard**
-  - Exibe os **produtos em falta (quantidade = 0)** e os **produtos com estoque baixo (menos de 3 unidades)**
-  - Mostra também as **últimas movimentações**
-  - Formatação amigável para valores monetários e datas de última movimentação
+- **Listagem de Produtos**  
+  Exibe todos os produtos com busca por **nome**, **código** ou **descrição**, com **autocomplete** em tempo real.  
+  Modal de detalhes por produto com opção de edição.
 
-- **Persistência em Nuvem**
-  - Todos os dados são armazenados no **Firebase Realtime Database**, isolados por usuário (`usuarios/{uid}/`)
+- **Movimentações de Estoque (Entradas e Saídas)**  
+  Registro de movimentações com seleção rápida de produto, quantidade, tipo de operação e data.  
+  Atualização automática do saldo de estoque após cada movimentação.
 
-- **Proteção de Dados**
-  - Regras de segurança Firebase configuradas para permitir acesso **somente a usuários autenticados**
-  - Restrição da API key por **SHA-1/SHA-256** da assinatura do app
+- **Tela Inicial com Resumo Inteligente**  
+  Mostra os **produtos com estoque zerado**, **estoque negativo** ou **baixo estoque (menor que 3)**.  
+  Inclui também as **movimentações mais recentes**.
 
-## ✅ Tecnologias utilizadas
+- **Controle de Splash Screen e Ícone Personalizado**  
+  Splash screen e ícone próprios configurados com Expo.
 
-- **Frontend:** React Native com Expo Router
-- **Banco de Dados:** Firebase Realtime Database
-- **Autenticação:** Firebase Authentication
-- **Build e Deploy:** EAS Build (Expo Application Services)
-- **Linguagem:** TypeScript
-- **UI & Componentes:** React Native + Expo Vector Icons + React Native Picker
-- **Câmera:** Expo ImagePicker (acesso à câmera para fotos dos produtos)
+- **Proteção de API via Restrição por SHA-1 e Nome de Pacote**  
+  Firebase protegido contra acesso externo indevido.
 
-## ✅ Peculiaridades e decisões arquiteturais
+- **Ajuda Rápida**  
+  Ícone de interrogação disponível em todas as telas, com alerta de contato via **WhatsApp** ou **E-mail** para suporte.
 
-- Estrutura modular de pastas com navegação por Stack e Tabs usando **Expo Router**
-- Integração direta com o **Realtime Database** para escrita/leitura de produtos e movimentações
-- Validação de campos e formatação (máscaras) **antes da persistência**
-- Uso de **KeyboardAvoidingView + ScrollView + TouchableWithoutFeedback** para evitar problemas de layout ao abrir o teclado
-- As imagens dos produtos são armazenadas **como base64 no banco**, facilitando o envio sem Firebase Storage
-- Placeholders com `placeholderTextColor` específico para garantir visibilidade no Android
-- Cálculo automático da margem de lucro (%) na tela de cadastro de produtos
-- Busca com autocomplete otimizado por quantidade de caracteres digitados e limite de resultados (5)
+---
 
+## ✅ Tecnologias Utilizadas
 
-## ✅ Apoio na resolução de problemas
+- **React Native (Expo Router)**  
+- **Firebase Realtime Database**  
+- **Firebase Authentication**  
+- **EAS Build**  
+- **Expo Splash Screen**  
+- **Expo Image Picker / Camera**  
+- **Expo Vector Icons**  
 
-Durante o desenvolvimento deste projeto, foram utilizadas consultas e auxílios de ferramentas como:
+---
 
-- **ChatGPT (OpenAI)** – para auxílio na resolução de problemas, melhorias de layout e estruturação de código
-- **StackOverflow** – solução direta para o problema de autenticação do Firebase no Expo, conforme a thread:
-  [https://stackoverflow.com/questions/79602687/react-native-expo-firebase-auth-component-auth-has-not-been-registered-yet/79603601#79603601](https://stackoverflow.com/questions/79602687/react-native-expo-firebase-auth-component-auth-has-not-been-registered-yet/79603601#79603601)
+## ✅ Peculiaridades e Diferenciais
+
+- **Autocomplete ao buscar produtos** com destaque em negrito nas partes correspondentes.  
+- **Máscaras de valores** (preços, peso, dimensões) com persistência limpa (sem formatação) no Firebase.  
+- **Cálculo automático da margem de lucro %** na tela de cadastro de produtos.  
+- **Prevenção de builds futuras com appVersionSource `"local"` no EAS.**  
+- **Tratamento de erros detalhado nas autenticações Firebase.**  
+- **Armazenamento da splash screen e ícone local para build via EAS.**
+
+---
+
+## ✅ Fontes de Apoio e Consulta
+
+- ChatGPT (OpenAI) para auxílio nas soluções de UX, integrações Firebase e EAS Build.  
+- StackOverflow – Resolução de conflito de autenticação com Expo/Firebase Auth:  
+https://stackoverflow.com/questions/79602687/react-native-expo-firebase-auth-component-auth-has-not-been-registered-yet/79603601#79603601
+
+---
+
+## ✅ Build e Publicação
+
+```bash
+eas build -p android --profile production
