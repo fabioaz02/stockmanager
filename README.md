@@ -28,9 +28,6 @@ Um aplicativo mobile de gerenciamento de estoque, desenvolvido em **React Native
 - **Controle de Splash Screen e Ícone Personalizado**  
   Splash screen e ícone próprios configurados com Expo.
 
-- **Proteção de API via Restrição por SHA-1 e Nome de Pacote**  
-  Firebase protegido contra acesso externo indevido.
-
 - **Ajuda Rápida**  
   Ícone de interrogação disponível em todas as telas, com alerta de contato via **WhatsApp** ou **E-mail** para suporte.
 
@@ -42,7 +39,6 @@ Um aplicativo mobile de gerenciamento de estoque, desenvolvido em **React Native
 - **Firebase Realtime Database**  
 - **Firebase Authentication**  
 - **EAS Build**  
-- **Expo Splash Screen**  
 - **Expo Image Picker / Camera**  
 - **Expo Vector Icons**  
 
