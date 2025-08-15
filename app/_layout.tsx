@@ -15,11 +15,11 @@ export default function RootLayout() {
       [
         {
           text: "WhatsApp",
-          onPress: () => Linking.openURL("https://wa.me/5546991117290?text=Olá! Preciso de ajuda com o app Stock Manager."),
+          onPress: () => Linking.openURL("https://wa.me/-?text=Olá! Preciso de ajuda com o app Stock Manager."),
         },
         {
           text: "E-mail",
-          onPress: () => Linking.openURL("mailto:fabiofidencio@alunos.utfpr.edu.br?subject=Ajuda - Stock Manager"),
+          onPress: () => Linking.openURL("mailto:-?subject=Ajuda - Stock Manager"),
         },
         { text: "Cancelar", style: "cancel" },
       ]
